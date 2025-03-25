@@ -1,5 +1,24 @@
 import csv
+import random
 from datetime import datetime
+from enum import Enum
+
+class BodyPart(Enum):
+    TRAPS = "Traps"
+    FRONT_DELTS = "Front Delts"
+    SIDE_DELTS = "Side Delts"
+    REAR_DELTS = "Rear Delts"
+    BACK_UPPER = "Back (Upper)"
+    BACK_LATS = "Back (Lats)"
+    ABS = "Abs"
+    BICEPS = "Biceps"
+    TRICEPS = "Triceps"
+    FOREARMS = "Forearms"
+    GLUTES = "Glutes"
+    HAMSTRINGS = "Hamstrings"
+    QUADS = "Quads"
+    CALVES = "Calves"
+    TIBIALIS = "Tibialis"
 
 class Workout:
     def __init__(self, name, date, duration, notes=""):
@@ -26,9 +45,11 @@ class Workout:
         return sum(sum(s.reps for s in e.exercise_sets) for e in self.exercises)
 
 class Exercise:
-    def __init__(self, name):
+    def __init__(self, name, body_part=None):
         self.name = name
         self.exercise_sets = []
+        # Randomly assign an enum value if not provided
+        self.body_part = body_part or random.choice(list(BodyPart))
 
     @property
     def number_of_times_performed(self):
@@ -99,6 +120,7 @@ def parse_csv(file_path):
                     exercise_obj = e
                     break
             if exercise_obj is None:
+                # Assign random body part from the enum
                 exercise_obj = Exercise(exercise_name)
                 workout_obj.exercises.append(exercise_obj)
 
