@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import pandas as pd
+import altair as alt
 from parse_raw_data import parse_csv
 
 def main():
@@ -75,8 +76,45 @@ def main():
         else:
             st.write("No data in selected date range.")
 
-        # Placeholder body-part graph
-        st.write("Placeholder for body-part graph here.")
+        # Prepare data for stacked bar chart of exercises by body part, grouped by week
+        # (Counting how many exercises for each body part occur in that week)
+        weekly_bodypart_counts = {}
+        for w in filtered:
+            iso_year, iso_week, _ = w.date.isocalendar()
+            week_key = f"{iso_year}-W{iso_week}"
+            
+            if week_key not in weekly_bodypart_counts:
+                weekly_bodypart_counts[week_key] = {}
+            for e in w.exercises:
+                bp = e.body_part.value  # e.body_part is an enum
+                weekly_bodypart_counts[week_key][bp] = weekly_bodypart_counts[week_key].get(bp, 0) + 1
+
+        # Convert into a DataFrame for Altair
+        if weekly_bodypart_counts:
+            chart_data = []
+            for week_key, bodyparts_dict in weekly_bodypart_counts.items():
+                for bp, count in bodyparts_dict.items():
+                    chart_data.append({
+                        "week": week_key,
+                        "body_part": bp,
+                        "count": count
+                    })
+            df_bar = pd.DataFrame(chart_data)
+
+            # Create the stacked bar chart
+            chart = (
+                alt.Chart(df_bar, title="Exercises by Body Part per Week")
+                .mark_bar()
+                .encode(
+                    x=alt.X("week:N", title="Week"),
+                    y=alt.Y("sum(count):Q", title="Number of Exercises"),
+                    color=alt.Color("body_part:N", title="Body Part")
+                )
+                .properties(width=600)
+            )
+            st.altair_chart(chart, use_container_width=True)
+        else:
+            st.write("No body-part data in selected range.")
 
 if __name__ == "__main__":
     main()
