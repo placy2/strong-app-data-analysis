@@ -20,10 +20,13 @@ To run this project locally, follow these steps:
     ```bash
     pip install -r requirements.txt
     ```
-4. Run the Streamlit application:
+
+4. Run the Streamlit application pointing to your Strong export data:
     ```bash
-    streamlit run src/gui.py
+    streamlit run src/gui.py -- /path/to/strong.csv
     ```
+   Commented code is also provided to set the default in `gui.py` if helpful.
+
 
 ## Further Help
 

@@ -1,12 +1,19 @@
 import streamlit as st
 from parse_raw_data import parse_csv
-from datetime import date
+import sys
 
 def main():
+    # Default data path - set and you will not need to provide the path as an argument.
+    # data_path = ""
+
+    # If a path is passed as an argument, override the default
+    if len(sys.argv) > 1:
+        data_path = sys.argv[1]
+
     st.title("Workout Data Analysis")
 
     # Parse CSV data
-    workouts = parse_csv("/Users/parkerlacy/coding/strong-data/data/raw/strong.csv")
+    workouts = parse_csv(data_path)
     if not workouts:
         st.write("No data found.")
         return
