@@ -8,6 +8,7 @@ from enum import Enum
 # Path to your JSON mapping file
 dirname = os.path.dirname(__file__)
 MAPPING_FILE = os.path.join(dirname, '../data/exercise_body_part_mapping.json')
+EXIT_FLAG = "__USER_EXIT__"  # A sentinel to detect user exit
 
 class BodyPart(Enum):
     TRAPS = "Traps"
@@ -107,15 +108,17 @@ def save_mappings(mapping_dict):
 def prompt_for_body_part(exercise_name):
     """
     Prompt user at the command line for which BodyPart an exercise should belong to.
-    Returns a string matching BodyPart.value, or None if no match chosen.
+    Returns a string matching BodyPart.value, 'EXIT_FLAG' if user chooses to quit, or None if invalid.
     """
     print(f"\nExercise name: {exercise_name}")
-    print("Select a body part from this list (by number):")
+    print("Select a body part from this list (by number), or press 'q' to quit and save:")
     body_part_list = list(BodyPart)
     for i, bp in enumerate(body_part_list, start=1):
         print(f"  {i}. {bp.value}")
 
-    choice = input("Enter the number: ").strip()
+    choice = input("Enter the number or 'q' to exit: ").strip().lower()
+    if choice == "q":
+        return EXIT_FLAG
     if not choice.isdigit():
         print("Invalid choice. Skipping.")
         return None
@@ -216,7 +219,11 @@ if __name__ == "__main__":
     for ex_name in exercises_without_mapping:
         if ex_name not in mapping_dict:
             chosen_part_str = prompt_for_body_part(ex_name)
-            if chosen_part_str:
+            # If user decides to exit, break out and save what we have so far
+            if chosen_part_str == EXIT_FLAG:
+                print(f"\nExiting, saving {len(parsed_workouts)} partial mappings...")
+                break
+            elif chosen_part_str:
                 mapping_dict[ex_name] = chosen_part_str
 
     # Save updated mappings
