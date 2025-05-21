@@ -1,7 +1,13 @@
 import csv
+import json
+import os
 import random
 from datetime import datetime
 from enum import Enum
+
+# Path to your JSON mapping file
+dirname = os.path.dirname(__file__)
+MAPPING_FILE = os.path.join(dirname, '../data/exercise_body_part_mapping.json')
 
 class BodyPart(Enum):
     TRAPS = "Traps"
@@ -13,12 +19,15 @@ class BodyPart(Enum):
     ABS = "Abs"
     BICEPS = "Biceps"
     TRICEPS = "Triceps"
+    PECS = "Pecs"
     FOREARMS = "Forearms"
     GLUTES = "Glutes"
     HAMSTRINGS = "Hamstrings"
     QUADS = "Quads"
     CALVES = "Calves"
     TIBIALIS = "Tibialis"
+    CARDIO = "Cardio"
+    OTHER = "Other"
 
 class Workout:
     def __init__(self, name, date, duration, notes=""):
@@ -49,7 +58,7 @@ class Exercise:
         self.name = name
         self.exercise_sets = []
         # Randomly assign an enum value if not provided
-        self.body_part = body_part or random.choice(list(BodyPart))
+        self.body_part = body_part
 
     @property
     def number_of_times_performed(self):
@@ -71,7 +80,7 @@ class ExerciseSet:
         self.notes = notes
 
 def parse_duration(duration_str):
-    # Examples of duration_str: "53m", "1h 31m", "32h 5m"
+    # Examples: "53m", "1h 31m", "32h 5m"
     parts = duration_str.split()
     total_minutes = 0
     for part in parts:
@@ -83,8 +92,45 @@ def parse_duration(duration_str):
             total_minutes += mins
     return total_minutes
 
+def load_mappings():
+    """Load exercise→body part mappings from JSON file, if it exists."""
+    if os.path.isfile(MAPPING_FILE):
+        with open(MAPPING_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+def save_mappings(mapping_dict):
+    """Save exercise→body part mappings to JSON file."""
+    with open(MAPPING_FILE, "w", encoding="utf-8") as f:
+        json.dump(mapping_dict, f, indent=2)
+
+def prompt_for_body_part(exercise_name):
+    """
+    Prompt user at the command line for which BodyPart an exercise should belong to.
+    Returns a string matching BodyPart.value, or None if no match chosen.
+    """
+    print(f"\nExercise name: {exercise_name}")
+    print("Select a body part from this list (by number):")
+    body_part_list = list(BodyPart)
+    for i, bp in enumerate(body_part_list, start=1):
+        print(f"  {i}. {bp.value}")
+
+    choice = input("Enter the number: ").strip()
+    if not choice.isdigit():
+        print("Invalid choice. Skipping.")
+        return None
+
+    idx = int(choice) - 1
+    if 0 <= idx < len(body_part_list):
+        return body_part_list[idx].value
+    else:
+        print("Invalid index. Skipping.")
+        return None
+
 def parse_csv(file_path):
+    mappings = load_mappings()
     workouts = {}
+
     with open(file_path, mode="r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -113,15 +159,27 @@ def parse_csv(file_path):
             else:
                 workout_obj = workouts[workout_key]
 
-            # Get or create the Exercise
+            # Determine body part from JSON or random
+            if exercise_name in mappings:
+                body_part_str = mappings[exercise_name]
+                # Convert string to BodyPart enum if possible
+                try:
+                    # next(...) gets the BodyPart member whose value matches
+                    the_body_part = next(bp for bp in BodyPart if bp.value == body_part_str)
+                except StopIteration:
+                    the_body_part = random.choice(list(BodyPart))
+            else:
+                # Not in JSON, remain None for now
+                the_body_part = None
+
+            # Check if exercise already exists
             exercise_obj = None
             for e in workout_obj.exercises:
                 if e.name == exercise_name:
                     exercise_obj = e
                     break
             if exercise_obj is None:
-                # Assign random body part from the enum
-                exercise_obj = Exercise(exercise_name)
+                exercise_obj = Exercise(exercise_name, body_part=the_body_part)
                 workout_obj.exercises.append(exercise_obj)
 
             # Create the ExerciseSet
@@ -139,5 +197,30 @@ def parse_csv(file_path):
 
 if __name__ == "__main__":
     file_path = "/Users/parkerlacy/coding/strong-data/data/raw/strong.csv"
+
+    # Perform initial parsing
     parsed_workouts = parse_csv(file_path)
-    print(f"Parsed {len(parsed_workouts)} workouts.")
+
+    # Gather all unique exercise names that have no known mapping
+    # (i.e., assigned a random body part or None).
+    exercises_without_mapping = set()
+    for w in parsed_workouts:
+        for e in w.exercises:
+            if not e.body_part:
+                exercises_without_mapping.add(e.name)
+
+    # Load existing mapping from JSON
+    mapping_dict = load_mappings()
+
+    # Prompt the user for those exercises
+    for ex_name in exercises_without_mapping:
+        if ex_name not in mapping_dict:
+            chosen_part_str = prompt_for_body_part(ex_name)
+            if chosen_part_str:
+                mapping_dict[ex_name] = chosen_part_str
+
+    # Save updated mappings
+    save_mappings(mapping_dict)
+
+    print(f"\nParsed {len(parsed_workouts)} workouts.")
+    print("Any new body part mappings were saved to exercise_body_part_mapping.json.")
