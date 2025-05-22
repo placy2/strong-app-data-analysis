@@ -42,7 +42,7 @@ Any addition or change to this enum will appear as an option when parsing unknow
 
 #### Using parse_raw_data.py to enter mappings
 
-`parse_raw_data.py` reads a CSV file exported from Strong and creates data structures representing workouts, exercises, and sets. If it encounters an exercise name for which no mapping to a body part exists, it will prompt you on the command line to select one from a list of available parts. Any new mappings are saved to the JSON file in [exercise_body_part_mapping.json](http://_vscodecontentref_/0) for future use.
+`parse_raw_data.py` reads a CSV file exported from Strong and creates data structures representing workouts, exercises, and sets. If it encounters an exercise name for which no mapping to a body part exists, it will prompt you on the command line to select one from a list of available parts. Any new mappings are saved to the JSON file in [exercise_body_part_mapping.json](./exercise_body_part_mapping.json) for future use.
 
 #### How to Run
 1. In a terminal, navigate to the root of this project.
