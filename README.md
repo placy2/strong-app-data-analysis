@@ -65,7 +65,20 @@ Any addition or change to this enum will appear as an option when parsing unknow
 
 3. Once the data is fully processed and loads up in the UI, the Home page will show statistics and a date picker for you to narrow the range on those stats. A similar design is present on the `Graphs` page. 
 
+## Developing locally
 
+To test & lint functionality perform the following steps:
+
+1. Install the required dependencies (note you can use pip rather than pip3 depending on setup):
+    ```bash
+    pip3 install -r requirements-dev.txt
+    ```
+2. Run the tests & linting with the following commands - note these will be done on PR as well, but linting only requires a score of 8.0 to pass.
+    ```bash
+    pytest
+    
+    pylint src
+    ```
 
 ## Further Help
 
