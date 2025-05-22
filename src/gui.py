@@ -9,7 +9,7 @@ import os
 
 def load_workouts():
     """Load workouts from CSV. Path can be overridden by a command-line argument."""
-    data_path = "/Users/parkerlacy/coding/strong-data/data/raw/strong.csv"
+    data_path = ""
     if len(sys.argv) > 1:
         data_path = sys.argv[1]
     
