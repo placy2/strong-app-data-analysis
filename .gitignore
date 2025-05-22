@@ -2,3 +2,4 @@
 data/raw/*
 /IDEAS.md
 data/*.json
+*/__pycache__/
