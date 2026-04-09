@@ -93,7 +93,10 @@ def show_graphs_page(workouts, min_date, max_date):
 
     if weekly_bodypart_counts:
         chart_data = []
-        for week_key, bodyparts_dict in weekly_bodypart_counts.items():
+        # Sorts weeks, but default sort results in "2026-W10" coming before "2026-W2", so we use the iso_year and iso_week to sort properly
+        sorted_weeks = sorted(weekly_bodypart_counts.keys(), key=lambda x: (int(x.split("-")[0]), int(x.split("-W")[1])))
+        for week_key in sorted_weeks:
+            bodyparts_dict = weekly_bodypart_counts[week_key]
             for bp, sets_total in bodyparts_dict.items():
                 chart_data.append({
                     "week": week_key,
@@ -106,7 +109,7 @@ def show_graphs_page(workouts, min_date, max_date):
             alt.Chart(df_bar)
             .mark_bar()
             .encode(
-                x=alt.X("week:N", title="Week"),
+                x=alt.X("week:N", title="Week", sort={}),
                 y=alt.Y("sum(sets_count):Q", title="Number of Exercise Sets"),
                 color=alt.Color("body_part:N", title="Body Part", scale=alt.Scale(scheme='category20'))
             )
