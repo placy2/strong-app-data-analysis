@@ -71,6 +71,9 @@ class Exercise:
             return None
         return max(s.date for s in self.exercise_sets)
 
+# Has a quirk with 'set_number' because of warmup sets, drop sets, and failure sets that don't follow the regular numeric order. For now we will just store the raw string and handle it in the parsing logic.
+# They are always entered as set_number 0 in the ExerciseSet, but currently only total number of sets is tracked in the GUI
+# Future work should expose a "set type" field that can be "regular", "warmup", "drop", or "failure" to allow for more nuanced analysis of set types
 class ExerciseSet:
     def __init__(self, workout, date, set_number, weight, reps, notes=""):
         self.workout = workout
@@ -92,6 +95,24 @@ def parse_duration(duration_str):
             mins = int(part.replace("m", ""))
             total_minutes += mins
     return total_minutes
+
+def parse_set_order(set_order_str):
+    # Handles regular set orders like "1", "2", but also non-numeric cases gracefully
+    # Includes "W" (warmup set), "F" (failure set), and "D" (drop set) as special cases
+    # For now special cases always result in set number 0, but this may be adjusted
+    if set_order_str.isdigit():
+        return int(set_order_str)
+    elif set_order_str in {"W", "F", "D"}:
+        return 0
+    else:
+        raise ValueError(f"Invalid set order: {set_order_str}")
+
+def parse_to_int(value_str):
+    # Handles cases like "0", "0.0"
+    try:
+        return int(float(value_str))
+    except ValueError:
+        return 0
 
 def load_mappings():
     """Load exercise→body part mappings from JSON file, if it exists."""
@@ -149,9 +170,9 @@ def parse_csv(file_path):
 
             # Parse fields
             date_parsed = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-            set_number = int(set_order) if set_order else 1
-            weight = int(float(weight)) if weight else 0
-            reps = int(reps) if reps else 0
+            set_number = parse_set_order(set_order) if set_order else 0
+            weight = parse_to_int(weight) if weight else 0
+            reps = parse_to_int(reps) if reps else 0
             duration = parse_duration(duration_str) if duration_str else 0
 
             # Get or create the Workout
