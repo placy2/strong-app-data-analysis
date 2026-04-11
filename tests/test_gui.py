@@ -3,7 +3,7 @@ import sys
 import os
 import types
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-import gui
+import gui, utils
 
 class DummyWorkout:
     def __init__(self, date, duration=30, total_weight_lifted=100, total_reps_performed=50, number_of_exercises=2, number_of_exercise_sets=4, exercises=None):
@@ -38,13 +38,13 @@ def test_filter_workouts_date_range():
     workouts = [d1, d2, d3]
     start = datetime(2024, 1, 5).date()
     end = datetime(2024, 1, 31).date()
-    filtered = gui.filter_workouts(workouts, [start, end])
+    filtered = utils.filter_workouts(workouts, [start, end])
     assert d2 in filtered and d1 not in filtered and d3 not in filtered
 
 def test_filter_workouts_no_range():
     """Test: filter_workouts returns all workouts if no date range is given."""
     workouts = [DummyWorkout(1), DummyWorkout(2)]
-    assert gui.filter_workouts(workouts, []) == workouts
+    assert utils.filter_workouts(workouts, []) == workouts
 
 def test_upload_page_shown_when_no_data(monkeypatch):
     """Test: Upload Data page is shown when no workouts are loaded."""
@@ -54,7 +54,7 @@ def test_upload_page_shown_when_no_data(monkeypatch):
     # Patch load_workouts to return []
     monkeypatch.setattr(gui, 'load_workouts', lambda: [])
     # Patch sidebar.selectbox to capture options
-    called = {}
+    # Fix because selectbox is now a proper st.navigation element
     def fake_selectbox(label, options, index=0):
         called['options'] = options
         return options[index]
