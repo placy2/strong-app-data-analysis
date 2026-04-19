@@ -1,4 +1,5 @@
 import json, os
+from typing import Optional
 from models import BodyPart
 from utils.parse_utils import load_mappings
 from parsers import parse_csv
@@ -6,14 +7,15 @@ from parsers import parse_csv
 # TODO add better info & description for this script around the mapping features
 
 
-
+MAPPING_FILE = os.path.join(os.path.dirname(__file__), '../data/exercise_body_part_mapping.json')
+EXIT_FLAG = "__USER_EXIT__"  # A sentinel to detect user exit
 
 def save_mappings(mapping_dict: dict[str, str], filename: str) -> None:
     """Save exercise→body part mappings to JSON file."""
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(mapping_dict, f, indent=2)
 
-def prompt_for_body_part(exercise_name: str) -> str | None:
+def prompt_for_body_part(exercise_name: str) -> Optional[str]:
     """
     Prompt user at the command line for which BodyPart an exercise should belong to.
     Returns a string matching BodyPart.value, 'EXIT_FLAG' if user chooses to quit, or None if invalid.
@@ -38,13 +40,22 @@ def prompt_for_body_part(exercise_name: str) -> str | None:
         print("Invalid index. Skipping.")
         return None
 
-if __name__ == "__main__":
-    dirname = os.path.dirname(__file__)
-    MAPPING_FILE = os.path.join(dirname, '../data/exercise_body_part_mapping.json')
-    EXIT_FLAG = "__USER_EXIT__"  # A sentinel to detect user exit
-    file_path = "/Users/parkerlacy/coding/strong-data/data/raw/strong.csv"
-
-    # Perform initial parsing
+def main_flow(file_path=None, mapping_file=None) -> None:
+    print("This script parses raw workout data and prompts for missing exercise→body part mappings.")
+    print("It will save any new mappings to exercise_body_part_mapping.json for future use.")
+    print("You can exit the prompt at any time by entering 'q', which will save your progress so far.")
+    if file_path is None:
+        cwd = os.getcwd()
+        # EDIT ME IF DESIRED - this is a hack to allow the script to run without a file path on my local machine
+        if "parkerlacy" in cwd:
+            file_path = "/Users/parkerlacy/coding/strong-data/data/raw/strong.csv"
+        # UI handles no data gracefully, so we can just warn the user and exit if they don't have the file
+        else:
+            print("Warning: No file path provided and default path not found.")
+            
+    if mapping_file is None:
+        mapping_file = MAPPING_FILE
+    
     parsed_workouts = parse_csv(file_path)
 
     # Gather all unique exercise names that have no known mapping
@@ -74,3 +85,7 @@ if __name__ == "__main__":
 
     print(f"\nParsed {len(parsed_workouts)} workouts.")
     print("Any new body part mappings were saved to exercise_body_part_mapping.json.")
+
+
+if __name__ == "__main__":
+    main_flow()
