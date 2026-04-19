@@ -3,14 +3,12 @@ from home import home_page
 from graphs import graphs_page
 from edit import edit_page
 from upload import upload_page
-from utils import load_workouts
+from utils.gui_utils import initialize_page
 
 
-def main():
+def main() -> None:
     """Main entry point - use st.navigation() for built-in navigation."""
-    # Initialize session state for workouts if not present
-    if "workouts" not in st.session_state:
-        st.session_state["workouts"] = load_workouts()
+    initialize_page()
 
     # Define pages using st.Page()
     pages = [

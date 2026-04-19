@@ -2,7 +2,7 @@ import pytest
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-import parse_raw_data as prd
+import scripts.parse_raw_data as prd
 
 def test_parse_duration():
     """Test: parse_duration correctly parses hours and minutes from strings."""

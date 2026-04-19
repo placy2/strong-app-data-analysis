@@ -3,7 +3,7 @@ import sys
 import os
 import types
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-import gui, utils
+import scripts.gui as gui, utils
 
 class DummyWorkout:
     def __init__(self, date, duration=30, total_weight_lifted=100, total_reps_performed=50, number_of_exercises=2, number_of_exercise_sets=4, exercises=None):

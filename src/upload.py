@@ -1,8 +1,9 @@
-import streamlit as st
-from parse_raw_data import parse_csv
 import tempfile, os
+import streamlit as st
+from scripts.parse_raw_data import parse_csv
+from utils.gui_utils import initialize_page
 
-def show_upload_page():
+def show_upload_page() -> None:
     """
     Display the 'Upload Data' page, allowing users to either select a local file path
     or upload via drag-and-drop. Updates st.session_state["workouts"] after successful parse.
@@ -43,9 +44,8 @@ def show_upload_page():
             st.info("No file or path provided. Please try again.")
 
 
-def upload_page():
+def upload_page() -> None:
     """Wrapper for upload page navigation."""
-    if "workouts" not in st.session_state:
-        st.session_state["workouts"] = load_workouts()
+    initialize_page()
     
     show_upload_page()

@@ -1,12 +1,14 @@
 import streamlit as st
-from utils import filter_workouts, load_workouts
 import pandas as pd
 import altair as alt
+from datetime import date
+from models import Workout
+from utils.gui_utils import filter_workouts, initialize_page, render_page_with_workouts
 
 
 #TODO: rework date filter to a more general "filters" option
 # include new filters like body part, exercise name, etc. 
-def show_graphs_page(workouts, min_date, max_date):
+def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) -> None:
     """Display the Graphs view with line chart and stacked bar chart."""
     st.title("Workout Data Analysis (Graphs)")
     date_range = st.date_input("Select a date range", [min_date, max_date])
@@ -40,14 +42,18 @@ def show_graphs_page(workouts, min_date, max_date):
         week_key = f"{iso_year}-W{iso_week}"
         if week_key not in weekly_bodypart_counts:
             weekly_bodypart_counts[week_key] = {}
+        print(f"Processing workout on {w.date} with exercises {w.exercises}")
 
         # For each exercise, add the number of sets
         for e in w.exercises:
-            bp = e.body_part.value  # e.body_part is an enum from parse_raw_data.py
-            set_count = len(e.exercise_sets)
-            weekly_bodypart_counts[week_key][bp] = (
-                weekly_bodypart_counts[week_key].get(bp, 0) + set_count
-            )
+            if e.body_part is not None:
+                bp = e.body_part.value  # e.body_part is an enum from parse_raw_data.py
+                set_count = len(e.exercise_sets)
+                weekly_bodypart_counts[week_key][bp] = (
+                    weekly_bodypart_counts[week_key].get(bp, 0) + set_count
+                )
+            else:
+                print(f"Warning: Exercise '{e.name}' in workout '{w.name}' on {w.date} has no body part assigned.")
 
     if weekly_bodypart_counts:
         chart_data = []
@@ -78,17 +84,8 @@ def show_graphs_page(workouts, min_date, max_date):
     else:
         st.write("No body-part data in selected range.")
 
-def graphs_page():
+def graphs_page() -> None:
     """Wrapper for graphs page navigation."""
-    if "workouts" not in st.session_state:
-        st.session_state["workouts"] = load_workouts()
+    initialize_page()
     
-    workouts = st.session_state["workouts"]
-    
-    if workouts:
-        dates = [w.date for w in workouts]
-        min_date = min(dates).date()
-        max_date = max(dates).date()
-        show_graphs_page(workouts, min_date, max_date)
-    else:
-        st.write("No data available. Please upload some data first.")
+    render_page_with_workouts(show_graphs_page)

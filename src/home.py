@@ -2,7 +2,7 @@
 import streamlit as st
 from datetime import date
 from models import Workout
-from utils import filter_workouts, load_workouts
+from utils.gui_utils import filter_workouts, initialize_page, render_page_with_workouts
 
 def show_home_page(workouts: list[Workout], min_date: date, max_date: date) -> None:
     """Display the Home view with summary metrics or prompts for data upload if not available."""
@@ -23,15 +23,6 @@ def show_home_page(workouts: list[Workout], min_date: date, max_date: date) -> N
 
 def home_page() -> None:
     """Streamlit wrapper for home page navigation."""
-    if "workouts" not in st.session_state:
-        st.session_state["workouts"] = load_workouts()
+    initialize_page()
     
-    workouts = st.session_state["workouts"]
-    
-    if workouts:
-        dates = [w.date for w in workouts]
-        min_date = min(dates).date()
-        max_date = max(dates).date()
-        show_home_page(workouts, min_date, max_date)
-    else:
-        st.write("No data available. Please upload some data first.")
+    render_page_with_workouts(show_home_page)
