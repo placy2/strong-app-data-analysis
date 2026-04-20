@@ -60,7 +60,7 @@ def load_workouts() -> list[Workout]:
 def parse_body_part(exercise_name: str, mappings: Dict[str, str]) -> Optional[BodyPart]:
     """Parse the body part for a given exercise name using the provided mappings."""
     if exercise_name in mappings:
-        print(f"Found mapping for '{exercise_name}': {mappings[exercise_name]}")
+        # print(f"Found mapping for '{exercise_name}': {mappings[exercise_name]}")
         body_part_str = mappings[exercise_name]
         try:
             return next(bp for bp in BodyPart if bp.value == body_part_str)

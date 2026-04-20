@@ -89,7 +89,7 @@ def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) ->
             .properties(width=600)
         )
         st.subheader("Exercise Sets by Body Part per Week")
-        st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, width='stretch')
     else:
         st.write("No body-part data in selected range.")
 
