@@ -1,4 +1,6 @@
-import os, json
+"""Utility functions for parsing workout data."""
+import json
+import os
 
 
 def load_mappings(filename: str) -> dict[str, str]:
@@ -29,7 +31,7 @@ def parse_set_order(set_order_str: str) -> int:
     # For now special cases always result in set number 0, but this may be adjusted
     if set_order_str.isdigit():
         return int(set_order_str)
-    elif set_order_str in {"W", "F", "D"}:
+    if set_order_str in {"W", "F", "D"}:
         return 0
     else:
         raise ValueError(f"Invalid set order: {set_order_str}")

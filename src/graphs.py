@@ -1,13 +1,14 @@
+"""Graphs page for visualizing workout data."""
+from datetime import date
 import streamlit as st
 import pandas as pd
 import altair as alt
-from datetime import date
 from models import Workout
 from utils.gui_utils import filter_workouts, initialize_page, render_page_with_workouts
 
 
-#TODO: rework date filter to a more general "filters" option
-# include new filters like body part, exercise name, etc. 
+#TODO: rework date filter to a more general "filters" option & simplify/break up func
+# include new filters like body part, exercise name, etc.
 def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) -> None:
     """Display the Graphs view with line chart and stacked bar chart."""
     st.title("Workout Data Analysis (Graphs)")
@@ -53,12 +54,16 @@ def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) ->
                     weekly_bodypart_counts[week_key].get(bp, 0) + set_count
                 )
             else:
-                print(f"Warning: Exercise '{e.name}' in workout '{w.name}' on {w.date} has no body part assigned.")
+                print(f"Warning: Exercise '{e.name}' from {w.date} has no body part assigned.")
 
     if weekly_bodypart_counts:
         chart_data = []
-        # Sorts weeks, but default sort results in "2026-W10" coming before "2026-W2", so we use the iso_year and iso_week to sort properly
-        sorted_weeks = sorted(weekly_bodypart_counts.keys(), key=lambda x: (int(x.split("-")[0]), int(x.split("-W")[1])))
+        # Sorts weeks, but default sort results in "2026-W10" coming before "2026-W2"
+        # thus, we use the iso_year and iso_week to sort properly
+        sorted_weeks = sorted(
+            weekly_bodypart_counts.keys(),
+            key=lambda x: (int(x.split("-")[0]), int(x.split("-W")[1]))
+        )
         for week_key in sorted_weeks:
             bodyparts_dict = weekly_bodypart_counts[week_key]
             for bp, sets_total in bodyparts_dict.items():
@@ -75,7 +80,11 @@ def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) ->
             .encode(
                 x=alt.X("week:N", title="Week", sort={}),
                 y=alt.Y("sum(sets_count):Q", title="Number of Exercise Sets"),
-                color=alt.Color("body_part:N", title="Body Part", scale=alt.Scale(scheme='category20'))
+                color=alt.Color(
+                    "body_part:N",
+                    title="Body Part",
+                    scale=alt.Scale(scheme='category20')
+                )
             )
             .properties(width=600)
         )
@@ -87,5 +96,4 @@ def show_graphs_page(workouts: list[Workout], min_date: date, max_date: date) ->
 def graphs_page() -> None:
     """Wrapper for graphs page navigation."""
     initialize_page()
-    
     render_page_with_workouts(show_graphs_page)

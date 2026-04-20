@@ -1,6 +1,7 @@
-import streamlit as st
-from typing import Callable
+"""Utility functions for Streamlit GUI."""
 from datetime import date, datetime
+from typing import Callable
+import streamlit as st
 from models import Workout
 from parsers import load_workouts
 
@@ -17,7 +18,9 @@ def initialize_page() -> None:
     if "workouts" not in st.session_state:
         st.session_state["workouts"] = load_workouts()
 
-def render_page_with_workouts(render_func: Callable[[list[Workout], datetime, datetime], None]) -> None:
+def render_page_with_workouts(
+        render_func: Callable[[list[Workout], datetime, datetime], None]
+    ) -> None:
     """Handles data presence and calls render function"""
     workouts = st.session_state["workouts"]
 
@@ -28,3 +31,4 @@ def render_page_with_workouts(render_func: Callable[[list[Workout], datetime, da
         render_func(workouts, min_date, max_date)
     else:
         st.write("No data available. Please upload some data first.")
+ 

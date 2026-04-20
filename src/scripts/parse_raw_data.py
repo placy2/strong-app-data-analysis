@@ -1,7 +1,12 @@
-import json, os
+"""Parse raw workout data from CSV and prompt for missing exercise→body part mappings."""
+import json
+import os
 from typing import Optional
+# pylint: disable=import-error
 from models import BodyPart
+# pylint: disable=import-error
 from utils.parse_utils import load_mappings
+# pylint: disable=import-error
 from parsers import parse_csv
 
 # TODO add better info & description for this script around the mapping features
@@ -17,8 +22,8 @@ def save_mappings(mapping_dict: dict[str, str], filename: str) -> None:
 
 def prompt_for_body_part(exercise_name: str) -> Optional[str]:
     """
-    Prompt user at the command line for which BodyPart an exercise should belong to.
-    Returns a string matching BodyPart.value, 'EXIT_FLAG' if user chooses to quit, or None if invalid.
+    Prompt user at command line for which BodyPart an exercise should belong to.
+    Returns a string BodyPart.value, 'EXIT_FLAG' if user chooses to quit, or None if invalid.
     """
     print(f"\nExercise name: {exercise_name}")
     print("Select a body part from this list (by number), or press 'q' to quit and save:")
@@ -36,26 +41,33 @@ def prompt_for_body_part(exercise_name: str) -> Optional[str]:
     idx = int(choice) - 1
     if 0 <= idx < len(body_part_list):
         return body_part_list[idx].value
-    else:
-        print("Invalid index. Skipping.")
-        return None
+
+    print("Invalid index. Skipping.")
+    return None
 
 def main_flow(file_path=None, mapping_file=None) -> None:
-    print("This script parses raw workout data and prompts for missing exercise→body part mappings.")
-    print("It will save any new mappings to exercise_body_part_mapping.json for future use.")
-    print("You can exit the prompt at any time by entering 'q', which will save your progress so far.")
+    """Main flow to parse CSV, prompt for missing mappings, and save results."""
+    print(
+        "This script parses raw workout data and prompts for missing exercise→body part mappings."
+    )
+    print(
+        "It will save any new mappings to exercise_body_part_mapping.json for future use."
+    )
+    print(
+        "You can exit the prompt at any time by entering 'q', which will save your progress."
+    )
     if file_path is None:
         cwd = os.getcwd()
-        # EDIT ME IF DESIRED - this is a hack to allow the script to run without a file path on my local machine
+        # EDIT ME IF DESIRED - this is a hack to let me run locally faster.
         if "parkerlacy" in cwd:
             file_path = "/Users/parkerlacy/coding/strong-data/data/raw/strong.csv"
-        # UI handles no data gracefully, so we can just warn the user and exit if they don't have the file
+        # UI handles no data gracefully, so we can just warn the user
         else:
             print("Warning: No file path provided and default path not found.")
-            
+
     if mapping_file is None:
         mapping_file = MAPPING_FILE
-    
+
     parsed_workouts = parse_csv(file_path)
 
     # Gather all unique exercise names that have no known mapping
@@ -77,11 +89,11 @@ def main_flow(file_path=None, mapping_file=None) -> None:
             if chosen_part_str == EXIT_FLAG:
                 print(f"\nExiting, saving {len(parsed_workouts)} partial mappings...")
                 break
-            elif chosen_part_str:
+            if chosen_part_str:
                 mapping_dict[ex_name] = chosen_part_str
 
     # Save updated mappings
-    save_mappings(mapping_dict)
+    save_mappings(mapping_dict, mapping_file)
 
     print(f"\nParsed {len(parsed_workouts)} workouts.")
     print("Any new body part mappings were saved to exercise_body_part_mapping.json.")

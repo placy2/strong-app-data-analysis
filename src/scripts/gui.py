@@ -1,3 +1,4 @@
+"""Main GUI entry point for the workout data analysis Streamlit app."""
 import streamlit as st
 from home import home_page
 from graphs import graphs_page

@@ -1,7 +1,10 @@
-# Contains all core data models (Workout, Exercise, ExerciseSet, BodyPart) used across the app.
+"""Contains all core data models (Workout, Exercise, ExerciseSet, BodyPart) used across the app."""
 from enum import Enum
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 class BodyPart(Enum):
+    """Class representing different body parts for exercises."""
     TRAPS = "Traps"
     FRONT_DELTS = "Front Delts"
     SIDE_DELTS = "Side Delts"
@@ -21,59 +24,72 @@ class BodyPart(Enum):
     CARDIO = "Cardio"
     OTHER = "Other"
 
-# single dated workout session
-# contains multiple exerciseSets
-class Workout:
-    def __init__(self, name, date, duration, notes=""):
-        self.name = name
-        self.date = date
-        self.duration = duration
-        self.notes = notes
-        self.exercises = []
-
-    @property
-    def number_of_exercises(self):
-        return len(self.exercises)
-
-    @property
-    def number_of_exercise_sets(self):
-        return sum(len(e.exercise_sets) for e in self.exercises)
-
-    @property
-    def total_weight_lifted(self):
-        return sum(sum(s.weight for s in e.exercise_sets) for e in self.exercises)
-
-    @property
-    def total_reps_performed(self):
-        return sum(sum(s.reps for s in e.exercise_sets) for e in self.exercises)
+# specific set of an exercise within a workout
+# Has a quirk with 'set_number' because of warmups, drop sets, and failure sets.
+# These don't follow the regular numeric order. For now we will just store the raw string.
+# They are always entered as set_number 0 in the ExerciseSet,
+# but currently only total number of sets is tracked in the GUI
+# Future work should expose a "set type" field that can be "regular", "warmup",
+# "drop", or "failure" to allow for more nuanced analysis of set types
+@dataclass
+class ExerciseSet:
+    """Class representing a specific set of an exercise within a workout."""
+    workout: 'Workout'
+    date: str
+    set_number: str
+    weight: float
+    reps: int
+    notes: str = ""
 
 # specific exercise (across all workouts)
+@dataclass
 class Exercise:
-    def __init__(self, name, body_part=None):
-        self.name = name
-        self.exercise_sets = []
-        # Randomly assign an enum value if not provided
-        self.body_part = body_part
+    """Class representing a specific exercise. Contains multiple sets across different workouts."""
+    name: str
+    exercise_sets: List[ExerciseSet] = field(default_factory=list)
+    body_part: Optional[BodyPart] = None
 
     @property
     def number_of_times_performed(self):
+        """Returns the total number of times this exercise has been performed."""
         return len(self.exercise_sets)
 
     @property
     def last_performed(self):
+        """Returns the date of the most recent set performed for this exercise, or None."""
         if not self.exercise_sets:
             return None
         return max(s.date for s in self.exercise_sets)
 
-# specific set of an exercise within a workout
-# Has a quirk with 'set_number' because of warmup sets, drop sets, and failure sets that don't follow the regular numeric order. For now we will just store the raw string and handle it in the parsing logic.
-# They are always entered as set_number 0 in the ExerciseSet, but currently only total number of sets is tracked in the GUI
-# Future work should expose a "set type" field that can be "regular", "warmup", "drop", or "failure" to allow for more nuanced analysis of set types
-class ExerciseSet:
-    def __init__(self, workout, date, set_number, weight, reps, notes=""):
-        self.workout = workout
-        self.date = date
-        self.set_number = set_number
-        self.weight = weight
-        self.reps = reps
-        self.notes = notes
+
+
+# single dated workout session
+# contains multiple exerciseSets
+@dataclass
+class Workout:
+    """Class representing a single workout session. Contains exercises, which contain sets."""
+    name: str
+    date: str
+    duration: float  # in minutes
+    notes: str = ""
+    exercises: List[Exercise] = field(default_factory=list)
+
+    @property
+    def number_of_exercises(self):
+        """Returns the total number of exercises in this workout."""
+        return len(self.exercises)
+
+    @property
+    def number_of_exercise_sets(self):
+        """Returns the total number of exercise sets in this workout."""
+        return sum(len(e.exercise_sets) for e in self.exercises)
+
+    @property
+    def total_weight_lifted(self):
+        """Returns the total weight lifted in this workout."""
+        return sum(sum(s.weight for s in e.exercise_sets) for e in self.exercises)
+
+    @property
+    def total_reps_performed(self):
+        """Returns the total number of reps performed in this workout."""
+        return sum(sum(s.reps for s in e.exercise_sets) for e in self.exercises)
