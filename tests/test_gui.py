@@ -1,8 +1,8 @@
-import pytest
 import sys
+import os
 import types
 from unittest.mock import MagicMock
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 sys.path.insert(0, '/Users/parkerlacy/coding/strong-data/src')
 import scripts.gui as gui
 
