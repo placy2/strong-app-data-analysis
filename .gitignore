@@ -4,3 +4,4 @@ data/raw/*
 data/*.json
 __pycache__/
 *.pyc
+*_notes.txt
