@@ -5,3 +5,6 @@ data/*.json
 __pycache__/
 *.pyc
 *_notes.txt
+.coverage
+htmlcov/
+.pytest_cache/

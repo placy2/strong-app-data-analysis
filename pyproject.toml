@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/home.py",
+    "*/graphs.py",
+    "*/edit.py",
+    "*/upload.py",
+    "*/scripts/gui.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95

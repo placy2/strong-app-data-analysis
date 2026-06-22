@@ -75,10 +75,13 @@ To test & lint functionality perform the following steps:
     ```
 2. Run the tests & linting with the following commands - note these will be done on PR as well, but linting only requires a score of 8.0 to pass.
     ```bash
-    pytest
-    
+    pytest --cov=src --cov-report=term-missing
+
     pylint src
     ```
+   Tests run with a coverage gate (configured in `pyproject.toml`), so PRs that add untested core logic will fail CI.
+
+New and changed functionality must come with tests. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the testing convention and details on the CI gate.
 
 ## Further Help
 
