@@ -1,3 +1,4 @@
 # Add test dependencies
 pytest
+pytest-cov
 pylint
